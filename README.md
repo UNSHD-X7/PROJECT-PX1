@@ -118,7 +118,7 @@ MIT
 
 ## Authors
 
-- [UNSHD-X7](https://github.com/UNSHD-X7)
+- [UNSHD-X7](https://github.com/UNSHD-X7) (MysteryMask alter=LuciferPekloCZ123)
 
 ## Source Files
 

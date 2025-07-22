@@ -1,24 +1,20 @@
-import hmac
-import hashlib
-import base64
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from cryptography.exceptions import InvalidSignature
+from sender_key_encryptor import SenderKeyEncryptor
 
-def decrypt_group_message(record: SenderKeyRecord, msg: dict):
-    target_index = msg["message_index"]
-    chain_key = record.sender_chain_key
-    for i in range(record.message_index, target_index):
-        _, chain_key = derive_message_key(chain_key)
-    message_key, next_chain_key = derive_message_key(chain_key)
-    ciphertext = base64.b64decode(msg["ciphertext"])
-    nonce = base64.b64decode(msg["nonce"])
-    signature = base64.b64decode(msg["signature"])
-    # verify signature
-    record.public_key().verify(signature, ciphertext)
-    # decrypt
-    aesgcm = AESGCM(message_key)
-    plaintext = aesgcm.decrypt(nonce, ciphertext, None)
-    # update record
-    record.sender_chain_key = next_chain_key
-    record.message_index = target_index + 1
-    return plaintext
+class GroupMessenger:
+    def __init__(self, bundle):
+        self.bundle = bundle
+
+    def encrypt_group_message(self, plaintext: bytes) -> dict:
+        message_key, next_chain_key = SenderKeyEncryptor.derive_message_key(self.bundle.sender_chain_key)
+        self.bundle.sender_chain_key = next_chain_key
+        self.bundle.message_index += 1
+
+        ciphertext = SenderKeyEncryptor.encrypt(message_key, plaintext)
+        signature = self.bundle.sign(ciphertext)
+
+        return {
+            "sender_key_id": self.bundle.sender_key_id,
+            "message_index": self.bundle.message_index,
+            "ciphertext": ciphertext,
+            "signature": signature
+        }

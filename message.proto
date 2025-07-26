@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-message MessageEnvelope {
-  bytes sender_identity_key = 1;
-  bytes sender_ephemeral_key = 2;
-  bytes sender_signed_prekey = 3;
-  bytes one_time_prekey = 4; // optional
-  bytes ciphertext = 5;
-}
